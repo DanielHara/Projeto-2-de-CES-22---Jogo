@@ -1,11 +1,13 @@
 import java.io.*;
 
+//Esta classe possibilita a recepção dos dados vindos do Cliente.
 
 public class DataFromClient extends Thread  {
 	
 	private Board B;
 	private InputStream StreamFromClient;
 	
+	//Construtor
 	public DataFromClient (Board B, InputStream StreamFromClient)
 	{
 		this.B = B;
