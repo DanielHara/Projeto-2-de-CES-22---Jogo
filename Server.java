@@ -5,10 +5,15 @@ import java.net.*;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
     
+    
+    //Implementação da classe principal e da função main.
+    
     public class Server extends JFrame
     {
     	public Server ()
     	{
+    		//Perguntar o número da Porta.
+    		
     		String Porta = null;
     		int Port = 0;
     		while (Porta == null || Porta.equals(""))
