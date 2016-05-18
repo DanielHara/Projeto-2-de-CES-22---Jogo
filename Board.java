@@ -21,6 +21,8 @@ import java.util.Random;
 
 public class Board extends JPanel implements ActionListener{
 
+	//Declaração de variáveis
+
 	public enum Direction {
 		Right, Left, Up, Down;		
 	}
@@ -63,7 +65,9 @@ public class Board extends JPanel implements ActionListener{
 	Socket client;
 	
 	DataFromClient Thread_Stream;
-		
+	
+	
+	//Esta função inicia um ServerSocket, que está disposto a iniciar o jogo com o cliente, através do comando ss.accept();	
 	public void Conectar (int Port)
 	{
 		try
@@ -71,7 +75,7 @@ public class Board extends JPanel implements ActionListener{
 			ss = new ServerSocket (Port);
 			client = ss.accept();
 			System.out.println("Conectou!");
-			StreamFromClient = client.getInputStream();
+			StreamFromClient = client.getInputStream();	//Obter as Input e Output Streams
 			StreamToClient = client.getOutputStream();
 			client.setSoTimeout(10);
 		}
@@ -81,6 +85,7 @@ public class Board extends JPanel implements ActionListener{
 		}
 	}
 	
+	//Construtor
 	public Board (int Port)
 	{
 		setBackground(Color.black);
@@ -88,8 +93,10 @@ public class Board extends JPanel implements ActionListener{
 		
 		Conectar(Port);
 		
-		timer = new Timer (10, this);
+		timer = new Timer (10, this);	//Cronômetro, para atualizar a tela
 		timer.start();
+		
+		//Carregar as imagens
 		
 		ImageIcon Imagem_PF = new ImageIcon("PF.png");
 		PF = Imagem_PF.getImage();
@@ -100,7 +107,7 @@ public class Board extends JPanel implements ActionListener{
 		ImageIcon Imagem_Propina = new ImageIcon("Propina.png");
 		Propina = Imagem_Propina.getImage();
 
-		
+		//Setar as posições dos personagens no início da execução do jogo.
 		Direcao_Lula = Direction.Up;
 		Direcao_Japa = Direction.Up;
 		
@@ -113,16 +120,18 @@ public class Board extends JPanel implements ActionListener{
 		x_Propina = randomGenerator.nextInt(Largura);
 		y_Propina = randomGenerator.nextInt(Altura);
 		
-		addKeyListener(new Controlador());
+		addKeyListener(new Controlador());    //Adicionar o controle por teclas.
 		setFocusable(true);
 		
 		System.out.println("Estou aqui!");
 	
 	
 		Thread_Stream = new DataFromClient (this, StreamFromClient);
-		Thread_Stream.start();
+		Thread_Stream.start();    //Iniciar a Thread, que é a responsável pela leitura de dados vindos do Cliente.
 	}
 	
+	
+	//Esta função serve para desenhar a Tela.
 	@Override
 	public void paintComponent(Graphics g)
 	{
@@ -133,16 +142,19 @@ public class Board extends JPanel implements ActionListener{
         Toolkit.getDefaultToolkit().sync();
 	}
 	
+	//Sempre que o cronômetro registrar que se passaram 10ms, este código é executado.
+	
 	public void actionPerformed (ActionEvent e)
 	{
 		move();
-		
+		//Se o Lula conseguiu pegar a propina, uma nova propina é colocada em um ponto aleatório e se acrescenta 1 propina no placar.	
 		if (ganhou_Propina())
 		{
 			System.out.println("PROPINA!");
 			set_Propina();
 			Placar_Jogo.Acrescentar_Propina();
 		}
+		//Se o Lula e o Japa se encontrarem, o Lula é colocado em um local aleatório e se acrescenta 1 prisão.
 		if (Prendeu())
 		{
 			System.out.println("PF!");
@@ -160,12 +172,12 @@ public class Board extends JPanel implements ActionListener{
 		str8 = Integer.toString(Placar_Jogo.get_n_Propina());
 		
 		String mensagem = new String (str1 + "," + str2 + "," + str3 + "," + str4 + "," + str5 + "," + str6 + "," + str7 + "," + str8 + ",");
-		
+		//Esta String chamada mensagem é passada ao cliente, para que ele possa localizar e sincronizar a tela.	
 		System.out.println(mensagem);
 		
 		try
 		{
-			StreamToClient.write(mensagem.getBytes());
+			StreamToClient.write(mensagem.getBytes());	//Passamos ao cliente as informações de posição.
 		}
 		catch(IOException evt)
 		{
@@ -176,20 +188,22 @@ public class Board extends JPanel implements ActionListener{
 	
 	private void set_Lula ()
 	{
-		x_Lula= randomGenerator.nextInt(Largura);
+		x_Lula= randomGenerator.nextInt(Largura);	//Quando o Lula encontrar o Japa, sua nova posição deve ser aleatória.
 		y_Lula = randomGenerator.nextInt(Altura);
 	}
 	
 	private boolean Prendeu()
 	{
-		return (Math.abs (x_Lula - x_Japa) < 20 && Math.abs(y_Lula - y_Japa) < 20); 
+		return (Math.abs (x_Lula - x_Japa) < 20 && Math.abs(y_Lula - y_Japa) < 20);  //Lula é considerado preso quando chegar suficientemente perto do Japa.
 	}
 	
 	private void set_Propina ()
 	{
-		x_Propina = randomGenerator.nextInt(Largura);
+		x_Propina = randomGenerator.nextInt(Largura);	//Quando Lula embolsa a propina, outra propina deve aparecer em local aleatório.
 		y_Propina = randomGenerator.nextInt(Altura);	
 	}
+	
+	//Esta função move os personagens de acordo com a direção em que ele viajam.
 	
 	private void move ()
 	{
@@ -230,57 +244,53 @@ public class Board extends JPanel implements ActionListener{
 	
 	private boolean ganhou_Propina ()
 	{
-		return (Math.abs (x_Lula - x_Propina) < 20 && Math.abs(y_Lula - y_Propina) < 20); 
+		return (Math.abs (x_Lula - x_Propina) < 20 && Math.abs(y_Lula - y_Propina) < 20); //Considera-se que Lula embolsa a propina quando chegar suficientemente perto dela.
 	}
 	
+	//Virar o Japa para a esquerda.
 	public void TurnLeft ()
 	{
 		Direcao_Japa = Direction.Left;
 	}
 	
+	//Virar o Japa para a direita.
 	public void TurnRight ()
 	{
 		Direcao_Japa = Direction.Right;
 	}
 	
+	//Virar o Japa para cima.
 	public void TurnUp ()
 	{
 		Direcao_Japa = Direction.Up;
 	}
 	
+	//Virar o Japa para baixo.
 	public void TurnDown ()
 	{
 		Direcao_Japa = Direction.Down;
 	}
 	
+	//Esta função permite que se controle o Lula por meio das setas do teclado.
 	private class Controlador extends KeyAdapter
 	{
 		@Override
 		public void keyPressed (KeyEvent e)
 		{
 			int key = e.getKeyCode();
-			//String Message = new String("");
 			
 			switch (key)
 			{
 				case KeyEvent.VK_RIGHT:
-					//Message = new String ("R");
-					//StreamToClient.write(Message.getBytes());
 					Direcao_Lula = Direction.Right;
 					break;
 				case KeyEvent.VK_LEFT:
-					//Message = new String ("L");
-					//StreamToClient.write(Message.getBytes());
 					Direcao_Lula = Direction.Left;
 					break;					
 				case KeyEvent.VK_UP:
-					//Message = new String ("U");
-					//StreamToClient.write(Message.getBytes());
 					Direcao_Lula = Direction.Up;
 					break;
 				case KeyEvent.VK_DOWN:
-					//Message = new String ("D");
-					//StreamToClient.write(Message.getBytes());
 					Direcao_Lula = Direction.Down;
 					break;
 			}
